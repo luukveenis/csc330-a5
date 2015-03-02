@@ -25,9 +25,30 @@
 
 ;; CHANGE (put your solutions here)
 (define (mupllist->racketlist lst)
-  "CHANGE")
+  (if (aunit? lst)
+      null
+      (let ([head (apair-e1 lst)]
+            [tail (apair-e2 lst)])
+        (if (apair? head)
+            (cons (mupllist->racketlist head) (mupllist->racketlist tail))
+            (cons head (mupllist->racketlist tail))
+        )
+      )
+  )
+)
+           
 (define (racketlist->mupllist lst)
- "CHANGE")
+  (if (null? lst)
+      (aunit)
+      (let ([head (car lst)]
+            [tail (cdr lst)])
+        (if (list? head)
+            (apair (racketlist->mupllist head) (racketlist->mupllist tail))
+            (apair head (racketlist->mupllist tail))
+        )
+      )
+  )
+)
 
 ;; Problem B
 
