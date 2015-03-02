@@ -74,7 +74,52 @@
                (int (+ (int-num v1)
                        (int-num v2)))
                (error "MUPL addition applied to non-number")))]
-        ;; "CHANGE" add more cases here
+        [(int? e) e]
+        [(closure? e) e]
+        [(apair? e) (apair
+                     (eval-under-env (apair-e1 e) env)
+                     (eval-under-env (apair-e2 e) env))]
+        [(aunit? e) e]
+        [(fun? e) (closure env e)]
+        [(ifgreater? e)
+         (let ([v1 (eval-under-env (ifgreater-e1 e) env)]
+               [v2 (eval-under-env (ifgreater-e2 e) env)])
+           (if (and (int? v1)
+                    (int? v2))
+               (if (> (int-num v1) (int-num v2))
+                   (eval-under-env (ifgreater-e3 e) env)
+                   (eval-under-env (ifgreater-e4 e) env))
+               (error "MUPL ifgreater applied to non-number")))]
+        [(mlet? e)
+         (let ([v (eval-under-env (mlet-e e) env)])
+           (eval-under-env (mlet-body e) (cons (cons (mlet-var e) v) env)))]
+        [(fst? e)
+         (let ([v (eval-under-env (fst-e e) env)])
+           (if (apair? v)
+               (apair-e1 v)
+               (error "MUPL fst applied to non-pair")))]
+        [(snd? e)
+         (let ([v (eval-under-env (snd-e e) env)])
+           (if (apair? v)
+               (apair-e2 v)
+               (error "MUPL snd applied to non-pair")))]
+        [(isaunit? e)
+         (let ([v (eval-under-env (isaunit-e e) env)])
+           (if (aunit? v) (int 1) (int 0)))]
+        [(call? e)
+         (let ([v1 (eval-under-env (call-funexp e) env)]
+               [v2 (eval-under-env (call-actual e) env)])
+           (if (not (closure? v1))
+               (error "MUPL call applied to non-closure")
+               (let* ([cf (closure-fun v1)]
+                      [ce (closure-env v1)]
+                      [fname (fun-nameopt cf)]
+                      [env1 (cons fname v1)]
+                      [env2 (cons (fun-formal cf) v2)])
+                 (eval-under-env (fun-body cf)
+                                 (if (not fname)
+                                     (cons env2 ce)
+                                     (cons env1 (cons env2 ce)))))))]
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
 ;; Do NOT change
