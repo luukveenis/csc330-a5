@@ -4,6 +4,16 @@
 
 (provide (all-defined-out)) ;; so we can put tests in a second file
 
+;; Question 11 from last assignment
+(define-syntax while-less
+  (syntax-rules (do)
+    [(while-less e1 do e2)
+     (letrec ([result e1]
+              [f (lambda () (if (< e2 result)
+                                (f)
+                                #t))])
+       (f))]))
+
 ;; definition of structures for MUPL programs - Do NOT change
 (struct var  (string) #:transparent)  ;; a variable, e.g., (var "foo")
 (struct int  (num)    #:transparent)  ;; a constant number, e.g., (int 17)
